@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,22 +25,24 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
-    - name: Download sent-transactions artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: sent-transactions
-        path: .
-      continue-on-error: true
+
+    - name: Pull latest sent-transactions.json
+      run: |
+        git fetch origin data/sent-transactions
+        git checkout origin/data/sent-transactions -- sent-transactions.json || echo "File not found, creating empty JSON"
+        python -c "import json; import pathlib; f=pathlib.Path('sent-transactions.json'); f.write_text(json.dumps([])) if not f.exists() else None"
 
     - name: Run transactions script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: python transactions.py
 
-    - name: Upload sent-transactions artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: sent-transactions
-        path: sent-transactions.json
-        overwrite: true
+    - name: Commit updated sent-transactions.json
+      run: |
+        git config user.name "transactions-bot"
+        git config user.email "transactions-bot@users.noreply.github.com"
+        git add sent-transactions.json
+        git commit -m "Update sent transactions [skip ci]" || echo "No changes to commit"
+        git push origin HEAD:data/sent-transactions
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
