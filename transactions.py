@@ -23,7 +23,7 @@ SENT_FILE = Path("sent_transactions.json")
 
 MAX_TRANSACTIONS = 25
 
-def load_sent_transactions():
+def load_sent_transactions() -> list[int]:
     if SENT_FILE.exists():
         try:
             return json.loads(SENT_FILE.read_text())
@@ -31,19 +31,24 @@ def load_sent_transactions():
             return []
     return []
 
-def save_sent_transactions(sent_ids):
+def save_sent_transactions(sent_ids: list[int]) -> None:
     SENT_FILE.write_text(json.dumps(sent_ids[-MAX_TRANSACTIONS:]))
+    
+def format_date(date: date) -> str:
+    return date.strftime("%Y-%m-%d")
 
 def fetch_transactions():
     today = date.today()
     yesterday = today - timedelta(days=1)
-    dates = [yesterday.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")]
+    yesterday_messages = []
+    today_messages = []
+    dates = [(yesterday, yesterday_messages), (today, today_messages)]
 
     sent_ids = load_sent_transactions()
-    new_msgs = []
 
-    for d in dates:
-        url = f"https://statsapi.mlb.com/api/v1/transactions?sportId={SPORT_ID}&teamId={TEAM_ID}&date={d}"
+    for d, messages in dates:
+        formatted_date = format_date(d)
+        url = f"https://statsapi.mlb.com/api/v1/transactions?sportId={SPORT_ID}&teamId={TEAM_ID}&date={formatted_date}"
         resp = requests.get(url)
         resp.raise_for_status()
         data = resp.json()
@@ -52,13 +57,24 @@ def fetch_transactions():
             tid = t.get('id')
             if tid not in sent_ids:
                 sent_ids.append(tid)
-                new_msgs.append(f"- {t.get('description')}")
+                messages.append(f"- {t.get('description')}")
 
-    if new_msgs:
-        save_sent_transactions(sent_ids)
-        return "**Blue Jays Transactions**\n" + "\n".join(new_msgs)
-    else:
+    messages = []
+    if yesterday_messages:
+        messages.append(f"**Blue Jays Transactions ({format(yesterday)})**")
+        messages.extend(yesterday_messages)
+        messages.append("")
+
+    if today_messages:
+        messages.append(f"**Blue Jays Transactions ({format(today)})**")
+        messages.extend(today_messages)
+        messages.append("")
+    
+    if not messages:
         return None
+
+    save_sent_transactions(sent_ids)
+    return "\n".join(messages)
 
 def send_to_discord(message: str):
     webhook = DiscordWebhook(url=WEBHOOK_URL, content=message)
