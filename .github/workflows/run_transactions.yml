@@ -3,7 +3,7 @@ name: Transactions Bot
 on:
   schedule:
     - cron: "0 13,16,19,22 * * *"
-    # PDT:      6 ,9 ,12,15
+    # PDT:     6 ,9 ,12,15
   workflow_dispatch:
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
       with:
         name: sent-transactions
         path: .
-        if-no-files-found: ignore
+      continue-on-error: true
 
     - name: Run transactions script
       env:
