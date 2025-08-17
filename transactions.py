@@ -49,10 +49,10 @@ def fetch_transactions():
         data = resp.json()
 
         for t in data.get("transactions", []):
-            tid = t.get("id")
+            tid = t.get('id')
             if tid not in sent_ids:
                 sent_ids.append(tid)
-                new_msgs.append(f"- {t.get("description")}")
+                new_msgs.append(f"- {t.get('description')}")
 
     if new_msgs:
         save_sent_transactions(sent_ids)
