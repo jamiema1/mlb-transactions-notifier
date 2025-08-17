@@ -2,7 +2,8 @@ name: Transactions Bot
 
 on:
   schedule:
-    - cron: "0 6,9,12,15 * * *"
+    - cron: "0 13,16,19,22 * * *"
+    # PDT:      6 ,9 ,12,15
   workflow_dispatch:
 
 jobs:
@@ -18,23 +19,26 @@ jobs:
       with:
         python-version: 3.11
 
-    - name: Cache sent transactions
-      uses: actions/cache@v3
-      with:
-        path: sent_transactions.json
-        key: sent-transactions-${{ github.run_id }}
-        restore-keys: |
-          sent-transactions-
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Set timezone to PST/PDT
-      run: sudo timedatectl set-timezone America/Los_Angeles
+    
+    - name: Download sent-transactions artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sent-transactions
+        path: .
+        if-no-files-found: ignore
 
     - name: Run transactions script
-      run: python transactions.py
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: python transactions.py
+
+    - name: Upload sent-transactions artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sent-transactions
+        path: sent-transactions.json
+        overwrite: true
