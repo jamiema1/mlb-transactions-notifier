@@ -20,7 +20,7 @@ TEAM_ID = 141
 # MLB Stats API sport ID for MLB
 SPORT_ID = 1
 
-SENT_FILE = Path("sent_transactions.json")
+SENT_FILE = Path("sent-transactions.json")
 
 MAX_TRANSACTIONS = 25
 ARROW = " ➡️ "
