@@ -47,5 +47,3 @@ jobs:
         git add -f sent-transactions.json
         git commit -m "Update sent-transactions.json" || echo "No changes to commit"
         git push origin HEAD:data/sent-transactions
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
