@@ -11,7 +11,7 @@ from discord_webhook import DiscordWebhook
 
 # load .env variables
 load_dotenv()
-WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
 # MLB Stats API team ID for Blue Jays
 TEAM_ID = 141
