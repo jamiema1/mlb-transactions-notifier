@@ -1,30 +1,22 @@
 import requests
 import re
-
 import os
 from dotenv import load_dotenv
-
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-
 import json
 from pathlib import Path
 
-# load .env variables
 load_dotenv()
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
-
-# MLB Stats API team ID for Blue Jays
-TEAM_ID = 141
-
-# MLB Stats API sport ID for MLB
-SPORT_ID = 1
+TEAM_ID = os.environ.get("TEAM_ID")
 
 SENT_FILE = Path("sent-transactions.json")
 
 MAX_TRANSACTIONS = 25
+DAYS_BACK = 3
+
 ARROW = " ➡️ "
-DAYS_BACK = 2
 
 GOOD_COLOUR = 0x22bb33
 OK_COLOUR = 0xf0ad4e
@@ -161,19 +153,16 @@ def get_past_n_days(n: int) -> list[datetime]:
     return [today - timedelta(days=i) for i in range(n - 1, -1, -1)]
 
 def fetch_transactions():
-    dates = get_past_n_days(DAYS_BACK)
     sent_ids = load_sent_transactions()
-
     embeds_by_date = {}
 
-    for d in dates:
+    for d in get_past_n_days(DAYS_BACK):
         formatted_date = format_date(d)
         print(f"Fetching transactions for {formatted_date}...")
-        url = f"https://statsapi.mlb.com/api/v1/transactions?sportId={SPORT_ID}&teamId={TEAM_ID}&date={formatted_date}"
+        url = f"https://statsapi.mlb.com/api/v1/transactions?sportId=1&teamId={TEAM_ID}&date={formatted_date}"
         resp = requests.get(url)
         resp.raise_for_status()
         data = resp.json()
-        new_transactions = 0
 
         for t in data.get("transactions", []):
             tid = t.get('id')
