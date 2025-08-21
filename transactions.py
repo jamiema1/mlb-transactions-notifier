@@ -14,7 +14,8 @@ TEAM_ID = os.environ.get("TEAM_ID")
 SENT_FILE = Path("sent-transactions.json")
 
 MAX_TRANSACTIONS = 25
-DAYS_BACK = 3
+DAYS_BACK = 2
+DAYS_FORWARD = 1
 
 ARROW = " ➡️ "
 
@@ -148,15 +149,15 @@ def format_body(
 ) -> str:
     return f"**{movement}**\n{description}"
 
-def get_past_n_days(n: int) -> list[datetime]:
+def get_dates() -> list[datetime]:
     today = datetime.now(ZoneInfo("America/Vancouver"))
-    return [today - timedelta(days=i) for i in range(n - 1, -1, -1)]
+    return [today - timedelta(days=i) for i in range(DAYS_BACK, -(DAYS_FORWARD + 1), -1)]
 
 def fetch_transactions():
     sent_ids = load_sent_transactions()
     embeds_by_date = {}
 
-    for d in get_past_n_days(DAYS_BACK):
+    for d in get_dates():
         formatted_date = format_date(d)
         print(f"Fetching transactions for {formatted_date}...")
         url = f"https://statsapi.mlb.com/api/v1/transactions?sportId=1&teamId={TEAM_ID}&date={formatted_date}"

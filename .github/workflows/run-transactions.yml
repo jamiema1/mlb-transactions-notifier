@@ -38,6 +38,7 @@ jobs:
     - name: Run transactions script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        TEAM_ID: ${{ vars.TEAM_ID }}
       run: python transactions.py
 
     - name: Commit updated sent-transactions.json
