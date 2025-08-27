@@ -9,7 +9,7 @@ from pathlib import Path
 
 load_dotenv()
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
-TEAM_ID = os.environ.get("TEAM_ID")
+TEAM_ID = int(os.environ.get("TEAM_ID"))
 
 SENT_FILE = Path("sent-transactions.json")
 
